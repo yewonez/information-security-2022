@@ -11,6 +11,9 @@ from ctypes import ArgumentError
 
 # Enigma Components
 ETW = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#     "BDFHJLCPRTXVZNYEIWGAKMUSQO"
+#     "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
+#     "AJDKSIRUXBLHWTMCQGZNPYFVOE"
 
 WHEELS = {
     "I": {
@@ -89,6 +92,50 @@ def pass_etw(input):
 def pass_wheels(input, reverse=False):
     # Implement Wheel Logics
     # Keep in mind that reflected signals pass wheels in reverse order
+    if reverse:
+        temp = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][0]) % 26
+        temp = chr(temp + ord('A'))
+        cnt = 0
+        for ch in SETTINGS["WHEELS"][0]["wire"]:
+            if ch == temp:
+                break
+            cnt += 1
+        input = SETTINGS["ETW"][cnt]
+
+        temp = (ord(input)-ord('A') +SETTINGS["WHEEL_POS"][1] -SETTINGS["WHEEL_POS"][0]) % 26
+        temp = chr(temp + ord('A'))
+        cnt = 0
+        for ch in SETTINGS["WHEELS"][1]["wire"]:
+            if ch == temp:
+                break
+            cnt += 1
+        input = SETTINGS["ETW"][cnt]
+
+        temp = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][2] - SETTINGS["WHEEL_POS"][1]) % 26
+        temp = chr(temp + ord('A'))
+        cnt = 0
+        for ch in SETTINGS["WHEELS"][2]["wire"]:
+            if ch == temp:
+                break
+            cnt += 1
+        input = SETTINGS["ETW"][cnt]
+
+        temp = (26 + ord(input) - ord('A') - SETTINGS["WHEEL_POS"][2]) % 26
+        input = SETTINGS["ETW"][temp]
+
+    else:
+        temp = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][2]) % 26
+        input = SETTINGS["WHEELS"][2]["wire"][temp]
+
+        temp = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][1] - SETTINGS["WHEEL_POS"][2]) % 26
+        input = SETTINGS["WHEELS"][1]["wire"][temp]
+
+        temp = (ord(input) - ord('A') + SETTINGS["WHEEL_POS"][0] - SETTINGS["WHEEL_POS"][1]) % 26
+        input = SETTINGS["WHEELS"][0]["wire"][temp]
+
+        temp = (26 + ord(input) - ord('A') - SETTINGS["WHEEL_POS"][0]) % 26
+        input = SETTINGS["ETW"][temp]
+
     return input
 
 
@@ -100,11 +147,20 @@ def pass_ukw(input):
 # Wheel Rotation
 def rotate_wheels():
     # Implement Wheel Rotation Logics
+    SETTINGS["WHEEL_POS"][2] += 1
+    SETTINGS["WHEEL_POS"][2] = SETTINGS["WHEEL_POS"][2] % 26
+    if SETTINGS["WHEEL_POS"][2] == SETTINGS["WHEELS"][2]["turn"] + 1:
+        SETTINGS["WHEEL_POS"][1] += 1
+        SETTINGS["WHEEL_POS"][1] = SETTINGS["WHEEL_POS"][1] % 26
+    if SETTINGS["WHEEL_POS"][1] == SETTINGS["WHEELS"][1]["turn"] + 1:
+        SETTINGS["WHEEL_POS"][0] += 1
+        SETTINGS["WHEEL_POS"][0] = SETTINGS["WHEEL_POS"][0] % 26
     pass
 
 
 # Enigma Exec Start
 plaintext = input("Plaintext to Encode: ")
+plaintext = plaintext.upper()
 ukw_select = input("Set Reflector (A, B, C): ")
 wheel_select = input("Set Wheel Sequence L->R (I, II, III): ")
 wheel_pos_select = input("Set Wheel Position L->R (A~Z): ")
@@ -125,3 +181,13 @@ for ch in plaintext:
     encoded_ch = pass_plugboard(encoded_ch)
 
     print(encoded_ch, end='')
+
+    # 예시
+    # swdgfuscydswfmyigoft
+    # lunchtodayissandwich
+    # UKW C, Rotor III-I-II (Y-B-B), Ring 1-1-1, A-V / F-T
+    # C
+    # III I I
+    # Y B B
+    # AV FT
+    # ord('a') -> 97return
