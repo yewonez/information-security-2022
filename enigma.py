@@ -190,4 +190,3 @@ for ch in plaintext:
     # III I I
     # Y B B
     # AV FT
-    # ord('a') -> 97return
